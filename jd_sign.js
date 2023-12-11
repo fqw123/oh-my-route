@@ -122,7 +122,7 @@ function main() {
     console.log('请配置京东cookie!'); return;
   }
 
-  signBean()
+  signBean();
 
   await new Promise(resolve => setTimeout(resolve, 3000));
 
