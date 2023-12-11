@@ -60,22 +60,29 @@ function sendNotificationIfNeed() {
   let desp = fs.readFileSync(result_path, "utf8")
 
   const options ={
-    uri:  `http://www.pushplus.plus/send?token=${push_key}&title=${text}&content=${desp}`,
-    method: 'GET'
+    method: 'POST',
+    uri:  `http://www.pushplus.plus/send`,
+    body: {
+      token: push_key,
+      title: text,
+      content: desp
+    },
+    json: true,
+    method: 'POST'
   }
 
-  rp.get(options).then(res=>{
+  rp(options).then(res=>{
     const code = res['code'];
     if (code == 200) {
       console.log("通知发送成功，任务结束！")
     }
     else {
       console.log(res);
-      console.log("通知发送失败，任务中断！url:"+options.uri)
+      console.log("通知发送失败，任务中断！非200")
       fs.writeFileSync(error_path, JSON.stringify(res), 'utf8')
     }
   }).catch((err)=>{
-    console.log("通知发送失败，任务中断！url:"+options.uri)
+    console.log("通知发送失败，任务中断！请求失败")
     fs.writeFileSync(error_path, err, 'utf8')
   })
 }
