@@ -71,11 +71,11 @@ function sendNotificationIfNeed() {
     }
     else {
       console.log(res);
-      console.log("通知发送失败，任务中断！")
+      console.log("通知发送失败，任务中断！url:"+options.uri)
       fs.writeFileSync(error_path, JSON.stringify(res), 'utf8')
     }
   }).catch((err)=>{
-    console.log("通知发送失败，任务中断！")
+    console.log("通知发送失败，任务中断！url:"+options.uri)
     fs.writeFileSync(error_path, err, 'utf8')
   })
 }
