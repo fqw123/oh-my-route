@@ -17,6 +17,8 @@ const js_path = './JD_DailyBonus.js'
 const result_path = './result.txt'
 // 错误信息输出路劲
 const error_path = './error.txt'
+// sign addr
+const sign_bean_url = 'https://api.m.jd.com/client.action?functionId=signBeanAct&body=%7B%22fp%22%3A%22-1%22%2C%22shshshfp%22%3A%22-1%22%2C%22shshshfpa%22%3A%22-1%22%2C%22referUrl%22%3A%22-1%22%2C%22userAgent%22%3A%22-1%22%2C%22jda%22%3A%22-1%22%2C%22rnVersion%22%3A%223.9%22%7D&appid=ld&client=apple&clientVersion=10.0.4&networkType=wifi&osVersion=14.8.1'
 
 Date.prototype.Format = function (fmt) {
   var o = {
@@ -61,15 +63,13 @@ function sendNotificationIfNeed() {
   let SCKEY = push_key.replace(/[\r\n]/g,"")
 
   const options ={
-    uri:  `https://sc.ftqq.com/${SCKEY}.send`,
-    form: { text, desp },
-    json: true,
-    method: 'POST'
+    uri:  `http://www.pushplus.plus/send?token=${SCKEY}&title=${text}&content=${desp}`,
+    method: 'GET'
   }
 
-  rp.post(options).then(res=>{
-    const code = res['errno'];
-    if (code == 0) {
+  rp.get(options).then(res=>{
+    const code = res['code'];
+    if (code == 200) {
       console.log("通知发送成功，任务结束！")
     }
     else {
@@ -83,25 +83,45 @@ function sendNotificationIfNeed() {
   })
 }
 
+function signBean() {
+  if (!cookie) {
+    console.log('cookie is null,执行任务结束!'); return;
+  }
+
+  const options ={
+    uri:  sign_bean_url,
+    headers: {
+      "Cookie": cookie,
+    },
+    json: true,
+    method: 'POST'
+  }
+
+  rp.post(options).then(res=>{
+    const code = res['code'];
+    if (code == '0') {
+      console.log("签到成功，任务结束！")
+      fs.writeFileSync(result_path, "签到成功", 'utf8')
+    }
+    else {
+      console.log(res);
+      console.log("签到失败，任务中断！")
+      fs.writeFileSync(error_path, JSON.stringify(res), 'utf8')
+    }
+  }).catch((err)=>{
+    console.log("签到失败，任务中断！")
+    fs.writeFileSync(error_path, err, 'utf8')
+  })
+}
+
 function main() {
 
   if (!cookie) {
     console.log('请配置京东cookie!'); return;
   }
 
-  // 1、下载脚本
-  download(js_url, './').then(res=>{
-    // 2、替换cookie
-    setupCookie()
-    // 3、执行脚本
-    exec(`node '${js_path}' >> '${result_path}'`);
-    // 4、发送推送
-    sendNotificationIfNeed() 
-  }).catch((err)=>{
-    console.log('脚本文件下载失败，任务中断！');
-    fs.writeFileSync(error_path, err, 'utf8')
-  })
-
+  signBean();
+  sendNotificationIfNeed();
 }
 
 main()
