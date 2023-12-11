@@ -101,7 +101,11 @@ function signBean() {
     const code = res['code'];
     if (code == '0') {
       console.log("签到成功，任务结束！")
-      fs.writeFileSync(result_path, "签到成功", 'utf8')
+      try {
+        fs.writeFileSync(result_path, "签到成功", {'encoding': 'utf8', 'flush': true})
+      } catch(err) {
+        console.error(`写入失败，err:${err}`)
+      }
     }
     else {
       console.log(res);
@@ -120,9 +124,8 @@ function main() {
     console.log('请配置京东cookie!'); return;
   }
 
-  signBean().then((res)=>{
-    sendNotificationIfNeed();
-  })
+  signBean()
+  sendNotificationIfNeed();
 }
 
 main()
