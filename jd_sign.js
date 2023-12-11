@@ -20,8 +20,6 @@ const error_path = './error.txt'
 // sign addr
 const sign_bean_url = 'https://api.m.jd.com/client.action?functionId=signBeanAct&body=%7B%22fp%22%3A%22-1%22%2C%22shshshfp%22%3A%22-1%22%2C%22shshshfpa%22%3A%22-1%22%2C%22referUrl%22%3A%22-1%22%2C%22userAgent%22%3A%22-1%22%2C%22jda%22%3A%22-1%22%2C%22rnVersion%22%3A%223.9%22%7D&appid=ld&client=apple&clientVersion=10.0.4&networkType=wifi&osVersion=14.8.1'
 
-const success = false;
-
 Date.prototype.Format = function (fmt) {
   var o = {
     'M+': this.getMonth() + 1,
@@ -54,8 +52,12 @@ function sendNotificationIfNeed() {
     console.log('执行任务结束!'); return;
   }
 
+  if (!fs.existsSync(result_path)) {
+    console.log('没有执行结果，任务中断!'); return;
+  }
+
   let text = "京东签到_" + new Date().Format('yyyy.MM.dd');
-  let desp = `签到结果:${success}`
+  let desp = fs.readFileSync(result_path, "utf8")
 
   // 去除末尾的换行
   let SCKEY = push_key.replace(/[\r\n]/g,"")
@@ -81,7 +83,7 @@ function sendNotificationIfNeed() {
   })
 }
 
-function signBean() {
+function signBean(callback) {
   if (!cookie) {
     console.log('cookie is null,执行任务结束!'); return;
   }
@@ -99,7 +101,6 @@ function signBean() {
     const code = res['code'];
     if (code == '0') {
       console.log("签到成功，任务结束！")
-      success = true;
       fs.writeFileSync(result_path, "签到成功", {'encoding': 'utf8', 'flush': true})
     }
     else {
@@ -107,12 +108,11 @@ function signBean() {
       console.log("签到失败，任务中断！")
       fs.writeFileSync(error_path, JSON.stringify(res), 'utf8')
     }
+    callback();
   }).catch((err)=>{
     console.log("签到失败，任务中断！")
     fs.writeFileSync(error_path, err, 'utf8')
   })
-
-  console.log('执行结束')
 }
 
 function main() {
@@ -121,8 +121,7 @@ function main() {
     console.log('请配置京东cookie!'); return;
   }
 
-  signBean();
-  sendNotificationIfNeed();
+  signBean(sendNotificationIfNeed);
 }
 
 main()
