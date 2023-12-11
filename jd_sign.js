@@ -124,7 +124,9 @@ function main() {
 
   signBean();
 
-  await new Promise(resolve => setTimeout(resolve, 3000));
+  setTimeout(function() {
+    console.log('Blah blah blah blah extra-blah');
+  }, 3000);
 
   sendNotificationIfNeed();
 }
