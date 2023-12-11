@@ -20,6 +20,8 @@ const error_path = './error.txt'
 // sign addr
 const sign_bean_url = 'https://api.m.jd.com/client.action?functionId=signBeanAct&body=%7B%22fp%22%3A%22-1%22%2C%22shshshfp%22%3A%22-1%22%2C%22shshshfpa%22%3A%22-1%22%2C%22referUrl%22%3A%22-1%22%2C%22userAgent%22%3A%22-1%22%2C%22jda%22%3A%22-1%22%2C%22rnVersion%22%3A%223.9%22%7D&appid=ld&client=apple&clientVersion=10.0.4&networkType=wifi&osVersion=14.8.1'
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 Date.prototype.Format = function (fmt) {
   var o = {
     'M+': this.getMonth() + 1,
@@ -101,11 +103,7 @@ function signBean() {
     const code = res['code'];
     if (code == '0') {
       console.log("签到成功，任务结束！")
-      try {
-        fs.writeFileSync(result_path, "签到成功", {'encoding': 'utf8', 'flush': true})
-      } catch(err) {
-        console.error(`写入失败，err:${err}`)
-      }
+      fs.writeFileSync(result_path, "签到成功", {'encoding': 'utf8', 'flush': true})
     }
     else {
       console.log(res);
@@ -125,6 +123,9 @@ function main() {
   }
 
   signBean()
+
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
   sendNotificationIfNeed();
 }
 
